@@ -24,7 +24,6 @@ import static org.apache.beam.sdk.io.FileIO.Write.defaultNaming;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import com.google.auth.oauth2.AccessToken;
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.OAuth2CredentialsWithRefresh;
 import com.google.cloud.dlp.v2.DlpServiceClient;
 import com.google.cloud.solutions.autotokenize.AutoTokenizeMessages.ColumnInformation;
@@ -308,9 +307,11 @@ public final class DlpInspectionPipeline {
               .setRefreshHandler(new JupyterHubAccessTokenProvider()).build());
     } else if (System.getenv().containsKey("GCS_TOKEN")) {
       logger.atInfo().log("Using credentials from env variable");
-      GoogleCredentials credentials = new GoogleCredentials(new AccessToken(System.getenv().get("GCS_TOKEN"),
-              new Date(System.currentTimeMillis() + 3600 * 1000)));
-      options.setGcpCredential(credentials);
+      AccessToken accessToken = new AccessToken(System.getenv().get("GCS_TOKEN"), new Date(System.currentTimeMillis()
+              + 3600 * 1000));
+      options.setGcpCredential(OAuth2CredentialsWithRefresh.newBuilder()
+              .setAccessToken(accessToken)
+              .setRefreshHandler(() -> accessToken).build());
     }
     new DlpInspectionPipeline(options).makePipeline().run();
   }
