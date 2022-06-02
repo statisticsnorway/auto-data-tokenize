@@ -12,15 +12,14 @@ import java.util.logging.Logger;
 
 public class JupyterHubAccessTokenProvider implements OAuth2CredentialsWithRefresh.OAuth2RefreshHandler {
 
-    public static final String AUTH_PROVIDER_URL_KEY = "LOCAL_USER_PATH";
-    public static final String GCS_TOKEN_KEY = "GCS_TOKEN_PROVIDER_KEY";
     private final String gcsTokenKey;
     private static final Logger LOG = Logger.getLogger(JupyterHubAccessTokenProvider.class.getName());
 
-    private final AuthProviderClient client = new AuthProviderClient(System.getenv().get(AUTH_PROVIDER_URL_KEY));
+    private final AuthProviderClient client;
 
-    public JupyterHubAccessTokenProvider() {
-        this.gcsTokenKey = System.getenv().get(GCS_TOKEN_KEY);
+    public JupyterHubAccessTokenProvider(String authProviderURL, String gcsTokenKey) {
+        this.client = new AuthProviderClient(authProviderURL);
+        this.gcsTokenKey = gcsTokenKey;
         LOG.info(String.format("Ready to fetch '%s' tokens", this.gcsTokenKey));
     }
 

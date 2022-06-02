@@ -16,13 +16,11 @@
 
 package com.google.cloud.solutions.autotokenize.pipeline;
 
-import com.google.auth.oauth2.AccessToken;
 import com.google.cloud.dlp.v2.DlpServiceClient;
 import com.google.cloud.solutions.autotokenize.AutoTokenizeMessages.ColumnInformation;
 import com.google.cloud.solutions.autotokenize.AutoTokenizeMessages.FlatRecord;
 import com.google.cloud.solutions.autotokenize.AutoTokenizeMessages.InspectionReport;
-import com.google.cloud.solutions.autotokenize.auth.JupyterHubAccessTokenProvider;
-import com.google.cloud.solutions.autotokenize.auth.OAuth2CredentialsWithRefreshAndQuotaProjectId;
+import com.google.cloud.solutions.autotokenize.auth.AccessTokenCredentialsFactory;
 import com.google.cloud.solutions.autotokenize.common.InspectionReportFileWriter;
 import com.google.cloud.solutions.autotokenize.common.InspectionReportToTableRow;
 import com.google.cloud.solutions.autotokenize.common.SecretsClient;
@@ -62,9 +60,7 @@ import org.apache.beam.sdk.values.PCollectionTuple;
 import org.apache.beam.sdk.values.TupleTag;
 
 import java.time.Clock;
-import java.util.Date;
 
-import static com.google.cloud.solutions.autotokenize.auth.JupyterHubAccessTokenProvider.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.ImmutableSet.*;
 import static org.apache.beam.sdk.io.FileIO.Write.*;
@@ -297,23 +293,9 @@ public final class DlpInspectionPipeline {
     PipelineOptionsFactory.register(DlpInspectionOptions.class);
     DlpInspectionOptions options =
         PipelineOptionsFactory.fromArgs(args).as(DlpInspectionOptions.class);
-
+    options.setCredentialFactoryClass(AccessTokenCredentialsFactory.class);
+    options.setJobName(new UserEnvironmentOptions.JobNameFactory().create(options));
     logger.atInfo().log("Staging the Dataflow job");
-    if (System.getenv().containsKey(AUTH_PROVIDER_URL_KEY)) {
-      logger.atInfo().log("Using credential provider url");
-      options.setGcpCredential(new OAuth2CredentialsWithRefreshAndQuotaProjectId.Builder()
-              .setQuotaProjectId(options.getProject())
-              .setAccessToken(new AccessToken("", new Date(0L)))
-              .setRefreshHandler(new JupyterHubAccessTokenProvider()).build());
-    } else if (System.getenv().containsKey("GCS_TOKEN")) {
-      logger.atInfo().log("Using credentials from env variable");
-      AccessToken accessToken = new AccessToken(System.getenv().get("GCS_TOKEN"), new Date(System.currentTimeMillis()
-              + 3600 * 1000));
-      options.setGcpCredential(new OAuth2CredentialsWithRefreshAndQuotaProjectId.Builder()
-              .setQuotaProjectId(options.getProject())
-              .setAccessToken(new AccessToken("", new Date(0L)))
-              .setRefreshHandler(() -> accessToken).build());
-    }
     new DlpInspectionPipeline(options).makePipeline().run();
   }
 

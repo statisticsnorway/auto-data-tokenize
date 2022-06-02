@@ -36,7 +36,7 @@ public interface DlpClientFactory extends Serializable {
 
     @Override
     public DlpServiceClient newClient() throws IOException {
-      return DlpServiceClient.create(DlpServiceSettings.newBuilder().setQuotaProjectId("dev-sirius").build());
+      return DlpServiceClient.create(DlpServiceSettings.newBuilder().build());
     }
   }
 }
