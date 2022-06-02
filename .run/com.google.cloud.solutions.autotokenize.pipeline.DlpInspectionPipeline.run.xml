@@ -7,7 +7,7 @@
       <env name="KMS_KEY_ID" value="dlptest-key" />
       <env name="KMS_KEYRING_ID" value="dlptest-keyring" />
       <env name="PROJECT_ID" value="dev-sirius" />
-      <env name="PROJECT_NUMBER" value="943886343370" />
+      <env name="PROJECT_NUMBER" value="TODO" />
       <env name="REGION_ID" value="europe-north1" />
       <env name="SECRET_MANAGER_KEY_NAME" value="autodlp_testkey_tinkey_wrapped" />
       <env name="TEMP_GCS_BUCKET" value="ssb-test-dapla-auto-dlp" />
