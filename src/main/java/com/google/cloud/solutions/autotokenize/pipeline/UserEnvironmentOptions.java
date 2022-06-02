@@ -31,7 +31,7 @@ import org.joda.time.format.DateTimeFormatter;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Common options for Jupyter notebook aware pipelines.
+ * Additional user specific options.
  */
 public interface UserEnvironmentOptions extends GcpOptions {
 
@@ -65,13 +65,13 @@ public interface UserEnvironmentOptions extends GcpOptions {
 
         @Override
         public String create(PipelineOptions options) {
-            UserEnvironmentOptions jupyterGcpOptions = options.as(UserEnvironmentOptions.class);
+            UserEnvironmentOptions userEnvironmentOptions = options.as(UserEnvironmentOptions.class);
             String appName = options.as(ApplicationNameOptions.class).getAppName();
             String normalizedAppName =
                     appName == null || appName.length() == 0
                             ? "BeamApp"
                             : appName.toLowerCase().replaceAll("[^a-z0-9]", "0").replaceAll("^[^a-z]", "a");
-            String userName = jupyterGcpOptions.getUserName();
+            String userName = userEnvironmentOptions.getUserName();
             String normalizedUserName = userName.toLowerCase().replaceAll("[^a-z0-9]", "0");
             String datePart = FORMATTER.print(DateTimeUtils.currentTimeMillis());
 

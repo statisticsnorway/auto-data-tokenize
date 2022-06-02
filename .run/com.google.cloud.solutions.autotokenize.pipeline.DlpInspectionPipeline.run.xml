@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="com.google.cloud.solutions.autotokenize.pipeline.DlpInspectionPipeline" type="Application" factoryName="Application" nameIsGenerated="true">
+  <configuration default="false" name="DlpInspectionPipeline" type="Application" factoryName="Application" nameIsGenerated="true">
     <envs>
       <env name="DATA_CATALOG_ENTRY_GROUP_ID" value="some_dev_entrygroup_id" />
       <env name="DLP_RUNNER_SERVICE_ACCOUNT_NAME" value="auto-dlp-runner" />
