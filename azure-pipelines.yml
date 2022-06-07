@@ -6,7 +6,15 @@
 trigger:
   branches:
     include:
+      - main
+
+  tags:
+    include:
       - '*'
+pr:
+  branches:
+    include:
+      - main
 pool:
   vmImage: 'ubuntu-latest'
 
