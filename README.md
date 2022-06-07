@@ -355,7 +355,7 @@ options = PipelineOptions(
     regionId = os.environ['REGION_ID'],
     serviceAccount = os.environ['DLP_RUNNER_SERVICE_ACCOUNT_EMAIL'],
     tempGcsBucket = os.environ['TEMP_GCS_BUCKET'],
-    vpcName = os.environ['VPC_NAME'],
+    subnetworkName = os.environ['SUBNETWORK_NAME'],
     inputPattern = f"gs://{os.environ['TEMP_GCS_BUCKET']}/userdata.avro",
     reportLocation = f"gs://{os.environ['TEMP_GCS_BUCKET']}/dlp_report/",
 )
