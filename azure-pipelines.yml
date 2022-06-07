@@ -21,4 +21,4 @@ steps:
       jdkArchitectureOption: 'x64'
       #publishJUnitResults: true
       #testResultsFiles: '**/TEST-*.xml'
-      tasks: 'build publishing'
+      tasks: 'build shadowJar publishing'
