@@ -40,6 +40,8 @@ repositories {
     }
 }
 
+version project.hasProperty('version') ? version : '1.0.0-SNAPSHOT'
+
 def protoVersion = "3.20.1"
 def beamVersion = "2.39.0"
 def hadoopVersion = "3.3.1"
@@ -178,7 +180,6 @@ publishing {
         myPublication(MavenPublication) {
             groupId 'no.ssb.dlpflow'
             artifactId 'auto-data-tokenize'
-            version '1.0.0-SNAPSHOT'             // Your package version
             artifact './build/libs/auto-data-tokenize-all.jar'    //Example: *./target/myJavaClasses.jar*
         }
     }
