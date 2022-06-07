@@ -280,5 +280,4 @@ spotless {
         endWithNewline()
     }
 
-    dependsOn ([compileJava, extractIncludeProto, extractProto, generateProto, processResources, spotlessFreshmark, spotlessGradle])
 }
