@@ -17,13 +17,6 @@ pr:
     include:
       - main
 
-resources:
-  repositories:
-    - repository: templates
-      type:       github
-      name:       statisticsnorway/azure-pipelines-templates
-      ref:        refs/tags/1.1.30
-      endpoint:   statisticsnorway
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -66,12 +59,18 @@ jobs:
           tasks: 'clean buildNeeded shadowJar -x test publish'
 
       # Maven test and verify (with Sonar, Checkstyle, PMD) and publish to Sonarcloud
-#      - template: ${{variables['System.DefaultWorkingDirectory']}}/maven/task-verify.yml
-#        parameters:
-#          sonarCloud: ${{ parameters.sonarCloud }}
-#          checkStyleRunAnalysis: ${{ parameters.checkStyleRunAnalysis }}
-#          pmdRunAnalysis: ${{ parameters.pmdRunAnalysis }}
-#          sonarQubeRunAnalysis: ${{ parameters.sonarQubeRunAnalysis }}
+      - task: DownloadSecureFile@1
+        name: gcrJsonKey
+        displayName: 'Download gcr creds'
+        inputs:
+          secureFile: 'gcr-key.json'
+
+      # Set env variable pointing to the file downloaded in previous task
+      # as a library in next task needs this env variable
+      - script: |
+          echo "Setting env variable GOOGLE_APPLICATION_CREDENTIALS"
+          echo "##vso[task.setvariable variable=GOOGLE_APPLICATION_CREDENTIALS]$(gcrJsonKey.secureFilePath)"
+        displayName: 'Setting GOOGLE_APPLICATION_CREDENTIALS env variable'
 
       # Deploy to Google Artifact Registry
 #      - template: ${{variables['System.DefaultWorkingDirectory']}}/maven/task-install-and-deploy-to-gar.yml
