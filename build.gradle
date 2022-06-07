@@ -177,7 +177,6 @@ publishing {
             artifactId 'auto-data-tokenize'
             version '1.0.0'             // Your package version
             artifact './build/libs/auto-data-tokenize-all.jar'    //Example: *./target/myJavaClasses.jar*
-            from components.java
         }
     }
     // Repositories *to* which Gradle can publish artifacts
