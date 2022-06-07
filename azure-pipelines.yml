@@ -43,7 +43,6 @@ variables:
 jobs:
   - job: javaLibraryCompleteBuild
     displayName: 'Java library - build, verify, publish'
-    container: ${{ parameters.mavenContainer }}
     # Run these jobs on any branch, but not on tags
     condition: not(startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
 
