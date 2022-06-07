@@ -2,6 +2,7 @@
 # Build your Java project and run tests with Gradle using a Gradle wrapper script.
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/java
+name: $(Build.SourceBranch)-$(date:yyyyMMdd)$(rev:.r)
 
 trigger:
   branches:
@@ -30,7 +31,19 @@ variables:
   - name: MAVEN_OPTS
     value: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
 
+
+resources:
+  repositories:
+    - repository: templates
+      type:       github
+      name:       statisticsnorway/azure-pipelines-templates
+      ref:        refs/tags/1.1.30
+      endpoint:   statisticsnorway
+
 steps:
+  # Download GCR credentials
+  - template: ${{variables['System.DefaultWorkingDirectory']}}/maven/task-authenticate-gar.yml
+
   - task: Gradle@2
     inputs:
       workingDirectory: ''
