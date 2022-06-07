@@ -172,7 +172,7 @@ publishing {
             groupId 'no.ssb.dlpflow'
             artifactId 'auto-data-tokenize'
             version '1.0.0'             // Your package version
-            artifact '*./build/libs/auto-data-tokenize-all.jar*'    //Example: *./target/myJavaClasses.jar*
+            artifact './build/libs/auto-data-tokenize-all.jar'    //Example: *./target/myJavaClasses.jar*
         }
     }
     // Repositories *to* which Gradle can publish artifacts
