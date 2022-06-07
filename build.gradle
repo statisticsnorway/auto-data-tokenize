@@ -166,8 +166,11 @@ tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
 }
 
+tasks.withType(PublishToMavenRepository) {
+    dependsOn(shadowJar)
+}
 publishing {
-    dependsOn shadowJar
+
     publications {
         myPublication(MavenPublication) {
             groupId 'no.ssb.dlpflow'
