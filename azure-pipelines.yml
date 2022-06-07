@@ -16,6 +16,15 @@ pr:
   branches:
     include:
       - main
+
+resources:
+  repositories:
+    - repository: templates
+      type:       github
+      name:       statisticsnorway/azure-pipelines-templates
+      ref:        refs/tags/1.1.30
+      endpoint:   statisticsnorway
+
 pool:
   vmImage: 'ubuntu-latest'
 
@@ -31,14 +40,6 @@ variables:
   - name: MAVEN_OPTS
     value: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
 
-
-resources:
-  repositories:
-    - repository: templates
-      type:       github
-      name:       statisticsnorway/azure-pipelines-templates
-      ref:        refs/tags/1.1.30
-      endpoint:   statisticsnorway
 jobs:
   - job: javaLibraryCompleteBuild
     displayName: 'Java library - build, verify, publish'
