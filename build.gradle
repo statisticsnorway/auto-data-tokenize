@@ -23,7 +23,7 @@ plugins {
     id "jacoco"
     id "com.github.johnrengelman.shadow" version "7.1.2"
     id "maven-publish"
-    id "com.google.cloud.artifactregistry.gradle-plugin" version "2.1.5"
+    id "com.google.cloud.artifactregistry.gradle-plugin" version "2.1.1"
 }
 
 repositories {
