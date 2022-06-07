@@ -167,6 +167,14 @@ tasks.withType(JavaCompile) {
 }
 
 publishing {
+    publications {
+        myPublication(MavenPublication) {
+            groupId 'no.ssb.dlpflow'
+            artifactId 'auto-data-tokenize'
+            version '1.0.0'             // Your package version
+            artifact '*./build/libs/auto-data-tokenize-all.jar*'    //Example: *./target/myJavaClasses.jar*
+        }
+    }
     // Repositories *to* which Gradle can publish artifacts
     repositories {
         maven {
