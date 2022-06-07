@@ -35,6 +35,9 @@ repositories {
     maven {
         url "artifactregistry://europe-north1-maven.pkg.dev/artifact-registry-14da/maven-releases"
     }
+    maven {
+        url "artifactregistry://europe-north1-maven.pkg.dev/artifact-registry-14da/maven-snapshots"
+    }
 }
 
 def protoVersion = "3.20.1"
@@ -175,7 +178,7 @@ publishing {
         myPublication(MavenPublication) {
             groupId 'no.ssb.dlpflow'
             artifactId 'auto-data-tokenize'
-            version '1.0.0'             // Your package version
+            version '1.0.0-release'             // Your package version
             artifact './build/libs/auto-data-tokenize-all.jar'    //Example: *./target/myJavaClasses.jar*
         }
     }
