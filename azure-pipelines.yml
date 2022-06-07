@@ -40,7 +40,6 @@ jobs:
     condition: not(startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
 
     steps:
-      # Maven test and verify (with Sonar, Checkstyle, PMD) and publish to Sonarcloud
       - task: DownloadSecureFile@1
         name: gcrJsonKey
         displayName: 'Download gcr creds'
@@ -55,6 +54,7 @@ jobs:
         displayName: 'Setting GOOGLE_APPLICATION_CREDENTIALS env variable'
 
       - task: Gradle@2
+        displayName: 'Build and publish'
         inputs:
           workingDirectory: ''
           gradleWrapperFile: 'gradlew'
