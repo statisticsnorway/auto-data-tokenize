@@ -167,6 +167,7 @@ tasks.withType(JavaCompile) {
 }
 
 publishing {
+    dependsOn shadowJar
     publications {
         myPublication(MavenPublication) {
             groupId 'no.ssb.dlpflow'
@@ -189,7 +190,12 @@ shadowJar {
     mergeServiceFiles()
 }
 
-tasks.publish.dependsOn(shadowJar)
+task pythonDist(type: Zip) {
+    archiveFileName = "dapla-dlp.zip"
+    destinationDirectory = file("$buildDir/libs")
+
+    from "src/main/python"
+}
 
 test {
     dependsOn cleanTest
