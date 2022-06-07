@@ -39,19 +39,42 @@ resources:
       name:       statisticsnorway/azure-pipelines-templates
       ref:        refs/tags/1.1.30
       endpoint:   statisticsnorway
+jobs:
+  - job: javaLibraryCompleteBuild
+    displayName: 'Java library - build, verify, publish'
+    container: ${{ parameters.mavenContainer }}
+    # Run these jobs on any branch, but not on tags
+    condition: not(startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
 
-steps:
-  # Download GCR credentials
-  - template: ${{variables['System.DefaultWorkingDirectory']}}/maven/task-authenticate-gar.yml
+    steps:
+      # Download GCR credentials
+      - template: ${{variables['System.DefaultWorkingDirectory']}}/maven/task-authenticate-gar.yml
 
-  - task: Gradle@2
-    inputs:
-      workingDirectory: ''
-      gradleWrapperFile: 'gradlew'
-      gradleOptions: '-Xmx3072m'
-      javaHomeOption: 'JDKVersion'
-      jdkVersionOption: '1.11'
-      jdkArchitectureOption: 'x64'
-      #publishJUnitResults: true
-      #testResultsFiles: '**/TEST-*.xml'
-      tasks: 'clean buildNeeded shadowJar -x test publish'
+      # Cache to speed up pipeline build time
+      - template: ${{variables['System.DefaultWorkingDirectory']}}/maven/task-cache.yml
+
+      - task: Gradle@2
+        inputs:
+          workingDirectory: ''
+          gradleWrapperFile: 'gradlew'
+          gradleOptions: '-Xmx3072m'
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: '1.11'
+          jdkArchitectureOption: 'x64'
+          #publishJUnitResults: true
+          #testResultsFiles: '**/TEST-*.xml'
+          tasks: 'clean buildNeeded shadowJar -x test publish'
+
+      # Maven test and verify (with Sonar, Checkstyle, PMD) and publish to Sonarcloud
+#      - template: ${{variables['System.DefaultWorkingDirectory']}}/maven/task-verify.yml
+#        parameters:
+#          sonarCloud: ${{ parameters.sonarCloud }}
+#          checkStyleRunAnalysis: ${{ parameters.checkStyleRunAnalysis }}
+#          pmdRunAnalysis: ${{ parameters.pmdRunAnalysis }}
+#          sonarQubeRunAnalysis: ${{ parameters.sonarQubeRunAnalysis }}
+
+      # Deploy to Google Artifact Registry
+#      - template: ${{variables['System.DefaultWorkingDirectory']}}/maven/task-install-and-deploy-to-gar.yml
+
+
+
