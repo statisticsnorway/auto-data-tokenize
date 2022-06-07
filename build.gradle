@@ -182,7 +182,7 @@ publishing {
     // Repositories *to* which Gradle can publish artifacts
     repositories {
         maven {
-            url "artifactregistry://europe-north1-maven.pkg.dev/artifact-registry-14da/maven-releases"
+            url "artifactregistry://europe-north1-maven.pkg.dev/artifact-registry-14da/maven-snapshots"
         }
     }
 }
