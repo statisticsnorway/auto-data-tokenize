@@ -17,7 +17,6 @@ pr:
     include:
       - main
 
-
 pool:
   vmImage: 'ubuntu-latest'
 
@@ -77,4 +76,4 @@ jobs:
           jdkArchitectureOption: 'x64'
           #publishJUnitResults: true
           #testResultsFiles: '**/TEST-*.xml'
-          tasks: 'publish --debug --warning-mode all'
+          tasks: 'publish'
