@@ -189,6 +189,8 @@ shadowJar {
     mergeServiceFiles()
 }
 
+tasks.publish.dependsOn(shadowJar)
+
 test {
     dependsOn cleanTest
     testLogging.showStandardStreams = true
