@@ -178,7 +178,7 @@ publishing {
         myPublication(MavenPublication) {
             groupId 'no.ssb.dlpflow'
             artifactId 'auto-data-tokenize'
-            version '1.0.0'             // Your package version
+            version '1.0.0-SNAPSHOT'             // Your package version
             artifact './build/libs/auto-data-tokenize-all.jar'    //Example: *./target/myJavaClasses.jar*
         }
     }
