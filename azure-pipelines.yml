@@ -40,8 +40,6 @@ jobs:
     condition: not(startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
 
     steps:
-      # Download GCR credentials
-      - template: ${{variables['System.DefaultWorkingDirectory']}}/maven/task-authenticate-gar.yml
 
       - task: Gradle@2
         inputs:
