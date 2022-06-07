@@ -40,19 +40,6 @@ jobs:
     condition: not(startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
 
     steps:
-
-      - task: Gradle@2
-        inputs:
-          workingDirectory: ''
-          gradleWrapperFile: 'gradlew'
-          gradleOptions: '-Xmx3072m'
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.11'
-          jdkArchitectureOption: 'x64'
-          #publishJUnitResults: true
-          #testResultsFiles: '**/TEST-*.xml'
-          tasks: 'clean buildNeeded shadowJar -x test publish'
-
       # Maven test and verify (with Sonar, Checkstyle, PMD) and publish to Sonarcloud
       - task: DownloadSecureFile@1
         name: gcrJsonKey
@@ -66,6 +53,20 @@ jobs:
           echo "Setting env variable GOOGLE_APPLICATION_CREDENTIALS"
           echo "##vso[task.setvariable variable=GOOGLE_APPLICATION_CREDENTIALS]$(gcrJsonKey.secureFilePath)"
         displayName: 'Setting GOOGLE_APPLICATION_CREDENTIALS env variable'
+
+      - task: Gradle@2
+        inputs:
+          workingDirectory: ''
+          gradleWrapperFile: 'gradlew'
+          gradleOptions: '-Xmx3072m'
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: '1.11'
+          jdkArchitectureOption: 'x64'
+          #publishJUnitResults: true
+          #testResultsFiles: '**/TEST-*.xml'
+          tasks: 'clean buildNeeded shadowJar -x test publish'
+
+
 
       # Deploy to Google Artifact Registry
 #      - template: ${{variables['System.DefaultWorkingDirectory']}}/maven/task-install-and-deploy-to-gar.yml
