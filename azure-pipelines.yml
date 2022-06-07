@@ -77,4 +77,4 @@ jobs:
           jdkArchitectureOption: 'x64'
           #publishJUnitResults: true
           #testResultsFiles: '**/TEST-*.xml'
-          tasks: 'publish --warning-mode all'
+          tasks: 'publish --debug --warning-mode all'
