@@ -358,7 +358,7 @@ Add the Python module (zip-file) to Python's library path
 
 ```Python
 import sys
-sys.path.append('dapla-dlp.zip')
+sys.path.append('auto-data-tokenize-1.0.0-SNAPSHOT.zip')
 ```
 
 And then execute the sample & identify pipeline through Python
