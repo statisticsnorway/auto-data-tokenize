@@ -66,6 +66,19 @@ jobs:
           tasks: 'clean buildNeeded shadowJar -x test'
 
       - task: Gradle@2
+        displayName: 'Build and publish python package'
+        inputs:
+          workingDirectory: ''
+          gradleWrapperFile: 'gradlew'
+          gradleOptions: '-Xmx3072m'
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: '1.11'
+          jdkArchitectureOption: 'x64'
+          #publishJUnitResults: true
+          #testResultsFiles: '**/TEST-*.xml'
+          tasks: 'pythonDist -x test'
+
+      - task: Gradle@2
         displayName: 'Publish'
         inputs:
           workingDirectory: ''
@@ -78,17 +91,5 @@ jobs:
           #testResultsFiles: '**/TEST-*.xml'
           tasks: 'publish'
 
-      - task: Gradle@2
-        displayName: 'Build and publish python package'
-        inputs:
-          workingDirectory: ''
-          gradleWrapperFile: 'gradlew'
-          gradleOptions: '-Xmx3072m'
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.11'
-          jdkArchitectureOption: 'x64'
-          #publishJUnitResults: true
-          #testResultsFiles: '**/TEST-*.xml'
-          tasks: 'pythonDist -x test'
 
 
