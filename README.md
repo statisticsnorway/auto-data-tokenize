@@ -331,6 +331,11 @@ sample_and_identify_pipeline --project="${PROJECT_ID}" \
 
 ### Publish
 
+Gradle build will run a task `spotless.freshmark` to check the README.md file format, if problems are encountered, run the following command to fix:
+
+```shell script
+./gradlew :spotlessApply
+```
 Publish to local maven repo:
 
 ```shell script
