@@ -24,6 +24,7 @@ import static org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO.Write.WriteDisposit
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.auth.oauth2.OAuth2Credentials;
 import com.google.cloud.kms.v1.KeyManagementServiceClient;
 import com.google.cloud.kms.v1.KeyManagementServiceSettings;
 import com.google.cloud.secretmanager.v1.SecretManagerServiceSettings;
@@ -32,6 +33,7 @@ import com.google.cloud.solutions.autotokenize.AutoTokenizeMessages.FlatRecord;
 import com.google.cloud.solutions.autotokenize.AutoTokenizeMessages.KeyMaterialType;
 import com.google.cloud.solutions.autotokenize.AutoTokenizeMessages.SourceType;
 import com.google.cloud.solutions.autotokenize.auth.AccessTokenCredentialsFactory;
+import com.google.cloud.solutions.autotokenize.auth.GoogleCredentialsWithQuotaProjectId;
 import com.google.cloud.solutions.autotokenize.common.CsvRowFlatRecordConvertors;
 import com.google.cloud.solutions.autotokenize.common.DeIdentifiedRecordSchemaConverter;
 import com.google.cloud.solutions.autotokenize.common.DeidentifyColumns;
@@ -131,7 +133,8 @@ public class EncryptionPipeline {
         secretsClient,
         kmsClient,
         new GcpKmsClearTextKeySetExtractor(
-            options.getTinkEncryptionKeySetJson(), options.getMainKmsKeyUri(), options.getGcpCredential()));
+            options.getTinkEncryptionKeySetJson(), options.getMainKmsKeyUri(),
+                new GoogleCredentialsWithQuotaProjectId((OAuth2Credentials) options.getGcpCredential())));
   }
 
   public PipelineResult run() throws Exception {
@@ -322,7 +325,8 @@ public class EncryptionPipeline {
             var encryptionKeySetJson = secretsClient.accessSecret(options.getKeyMaterial());
             ClearTextKeySetExtractor keySetExtractor2 =
                 new GcpKmsClearTextKeySetExtractor(
-                    encryptionKeySetJson, options.getMainKmsKeyUri(), options.getGcpCredential());
+                    encryptionKeySetJson, options.getMainKmsKeyUri(),
+                        new GoogleCredentialsWithQuotaProjectId((OAuth2Credentials) options.getGcpCredential()));
             return (ValueTokenizerFactory)
                 ctor.newInstance(keySetExtractor2.get(), KeyMaterialType.TINK_GCP_KEYSET_JSON);
 

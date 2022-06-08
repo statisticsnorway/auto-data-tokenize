@@ -17,14 +17,13 @@
 package com.google.cloud.solutions.autotokenize.encryptors;
 
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.auth.Credentials;
-import com.google.auth.oauth2.OAuth2Credentials;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.crypto.tink.CleartextKeysetHandle;
 import com.google.crypto.tink.JsonKeysetReader;
 import com.google.crypto.tink.JsonKeysetWriter;
 import com.google.crypto.tink.KeysetHandle;
 import com.google.crypto.tink.integration.gcpkms.GcpKmsClient;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -33,13 +32,12 @@ public class GcpKmsClearTextKeySetExtractor implements ClearTextKeySetExtractor 
 
   private final String tinkKeySetJson;
   private final String mainKeyKmsUri;
-  private final GoogleCredential credential;
+  private final GoogleCredentials credential;
 
-  public GcpKmsClearTextKeySetExtractor(String tinkKeySetJson, String mainKeyKmsUri, Credentials credentials) {
+  public GcpKmsClearTextKeySetExtractor(String tinkKeySetJson, String mainKeyKmsUri, GoogleCredentials credentials) {
     this.tinkKeySetJson = tinkKeySetJson;
     this.mainKeyKmsUri = mainKeyKmsUri;
-    this.credential = new GoogleCredential.Builder().build();
-    this.credential.setAccessToken(((OAuth2Credentials)credentials).getAccessToken().getTokenValue());
+    this.credential = credentials;
   }
 
   /**
@@ -52,9 +50,9 @@ public class GcpKmsClearTextKeySetExtractor implements ClearTextKeySetExtractor 
   @Override
   public String get() throws GeneralSecurityException, IOException {
     var tinkKeySet =
-        KeysetHandle.read(
-            JsonKeysetReader.withString(tinkKeySetJson),
-            new GcpKmsClient().withCredentials(credential).getAead(mainKeyKmsUri));
+            KeysetHandle.read(
+                    JsonKeysetReader.withString(tinkKeySetJson),
+                    new GcpKmsClient().withCredentials(credential).getAead(mainKeyKmsUri));
 
     var baos = new ByteArrayOutputStream();
     CleartextKeysetHandle.write(tinkKeySet, JsonKeysetWriter.withOutputStream(baos));
