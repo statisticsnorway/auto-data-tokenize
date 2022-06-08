@@ -329,6 +329,14 @@ sample_and_identify_pipeline --project="${PROJECT_ID}" \
 --reportLocation="gs://${TEMP_GCS_BUCKET}/dlp_report/"
 ```
 
+### Publish
+
+Publish to local maven repo:
+
+```shell script
+./gradlew publishToMavenLocal
+```
+
 ### Launch sample & identify pipeline from Python
 
 First, build the Python module:

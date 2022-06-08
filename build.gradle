@@ -175,16 +175,24 @@ tasks.withType(PublishToMavenRepository) {
 publishing {
 
     publications {
-        myPublication(MavenPublication) {
+        javaPublication(MavenPublication) {
             groupId 'no.ssb.dlpflow'
             artifactId 'auto-data-tokenize'
             version '1.0.0-SNAPSHOT'             // Your package version
             artifact './build/libs/auto-data-tokenize-all.jar'    //Example: *./target/myJavaClasses.jar*
         }
+        pythonPublication(MavenPublication) {
+            groupId 'no.ssb.dlpflow.python'
+            artifactId 'auto-data-tokenize'
+            version '0.0.1-SNAPSHOT'             // Your package version
+            artifact './build/libs/dapla-dlpflow.zip'    //Example: *./target/myJavaClasses.jar*
+
+        }
     }
     // Repositories *to* which Gradle can publish artifacts
     repositories {
         maven {
+            //mavenLocal()
             if(project.version.endsWith('-SNAPSHOT')) {
                 url "artifactregistry://europe-north1-maven.pkg.dev/artifact-registry-14da/maven-snapshots"
             } else {
@@ -202,7 +210,7 @@ shadowJar {
 }
 
 task pythonDist(type: Zip) {
-    archiveFileName = "dapla-dlp.zip"
+    archiveFileName = "dapla-dlpflow.zip"
     destinationDirectory = file("$buildDir/libs")
 
     from "src/main/python"
