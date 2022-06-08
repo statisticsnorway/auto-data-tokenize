@@ -23,11 +23,15 @@ import static org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO.Write.WriteDisposit
 import static org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO.Write.WriteDisposition.WRITE_TRUNCATE;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.cloud.kms.v1.KeyManagementServiceClient;
+import com.google.cloud.kms.v1.KeyManagementServiceSettings;
+import com.google.cloud.secretmanager.v1.SecretManagerServiceSettings;
 import com.google.cloud.solutions.autotokenize.AutoTokenizeMessages.DlpEncryptConfig;
 import com.google.cloud.solutions.autotokenize.AutoTokenizeMessages.FlatRecord;
 import com.google.cloud.solutions.autotokenize.AutoTokenizeMessages.KeyMaterialType;
 import com.google.cloud.solutions.autotokenize.AutoTokenizeMessages.SourceType;
+import com.google.cloud.solutions.autotokenize.auth.AccessTokenCredentialsFactory;
 import com.google.cloud.solutions.autotokenize.common.CsvRowFlatRecordConvertors;
 import com.google.cloud.solutions.autotokenize.common.DeIdentifiedRecordSchemaConverter;
 import com.google.cloud.solutions.autotokenize.common.DeidentifyColumns;
@@ -44,6 +48,9 @@ import com.google.cloud.solutions.autotokenize.encryptors.ValueTokenizerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.BaseEncoding;
 import com.google.protobuf.ByteString;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.List;
 import org.apache.avro.Schema;
 import org.apache.avro.file.CodecFactory;
@@ -76,13 +83,23 @@ public class EncryptionPipeline {
     EncryptionPipelineOptions options =
         PipelineOptionsFactory.fromArgs(args).as(EncryptionPipelineOptions.class);
 
+    options.setCredentialFactoryClass(AccessTokenCredentialsFactory.class);
+    options.setJobName(new UserEnvironmentOptions.JobNameFactory().create(options));
+
     new EncryptionPipeline(
             options,
             Pipeline.create(options),
             DlpClientFactory.defaultFactory(),
-            SecretsClient.of(),
-            KeyManagementServiceClient.create())
+            SecretsClient.withSettings(getSecretManagerServiceSettings(options)),
+            KeyManagementServiceClient.create(KeyManagementServiceSettings.newBuilder().setQuotaProjectId(options.getProject()).build()))
         .run();
+  }
+
+  private static SecretManagerServiceSettings getSecretManagerServiceSettings(EncryptionPipelineOptions options) throws IOException, GeneralSecurityException {
+    return SecretManagerServiceSettings.newBuilder()
+            .setCredentialsProvider(FixedCredentialsProvider
+                    .create(AccessTokenCredentialsFactory.fromOptions(options).getCredential()))
+            .setQuotaProjectId(options.getProject()).build();
   }
 
   @VisibleForTesting
@@ -114,7 +131,7 @@ public class EncryptionPipeline {
         secretsClient,
         kmsClient,
         new GcpKmsClearTextKeySetExtractor(
-            options.getTinkEncryptionKeySetJson(), options.getMainKmsKeyUri()));
+            options.getTinkEncryptionKeySetJson(), options.getMainKmsKeyUri(), options.getGcpCredential()));
   }
 
   public PipelineResult run() throws Exception {
@@ -305,7 +322,7 @@ public class EncryptionPipeline {
             var encryptionKeySetJson = secretsClient.accessSecret(options.getKeyMaterial());
             ClearTextKeySetExtractor keySetExtractor2 =
                 new GcpKmsClearTextKeySetExtractor(
-                    encryptionKeySetJson, options.getMainKmsKeyUri());
+                    encryptionKeySetJson, options.getMainKmsKeyUri(), options.getGcpCredential());
             return (ValueTokenizerFactory)
                 ctor.newInstance(keySetExtractor2.get(), KeyMaterialType.TINK_GCP_KEYSET_JSON);
 
