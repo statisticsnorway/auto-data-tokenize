@@ -336,11 +336,15 @@ Gradle build will run a task `spotless.freshmark` to check the README.md file fo
 ```shell script
 ./gradlew :spotlessApply
 ```
-Publish to local maven repo:
+### Publish to local maven repo:
 
 ```shell script
 ./gradlew publishToMavenLocal
 ```
+### Publish to SNAPSHOTS or Releases:
+Go to `build.gradle` file and find the variable `version`,
+give a post fix `-SNAPSHOT` and commit the `build.gradle` file for publish a snapshot version.
+For release version, you can just delete the post fix `-SNAPSHOT`.
 
 ### Launch sample & identify pipeline from Python
 
