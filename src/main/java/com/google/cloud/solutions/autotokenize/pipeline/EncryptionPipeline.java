@@ -182,6 +182,7 @@ public class EncryptionPipeline {
   private Schema buildEncryptedSchema() {
     checkArgument(
         isNotBlank(options.getSchema())
+            || isNotBlank(options.getSchemaLocation())
             || (SourceType.CSV_FILE.equals(options.getSourceType())
                 && options.getCsvHeaders() != null
                 && !options.getCsvHeaders().isEmpty()),
@@ -189,11 +190,13 @@ public class EncryptionPipeline {
 
     Schema inputSchema;
     try {
-      if ((options.getSchema() != null)) {
+      if (options.getSchemaLocation() != null) {
         try (InputStream stream = Channels.newInputStream(FileSystems.open(FileSystems.matchNewResource(
-                options.getSchema(), false)))) {
+                options.getSchemaLocation(), false)))) {
           inputSchema = new Schema.Parser().parse(stream);
         }
+      } else if (options.getSchema() != null) {
+        inputSchema = new Schema.Parser().parse(options.getSchema());
       } else {
         inputSchema = CsvRowFlatRecordConvertors.makeCsvAvroSchema(options.getCsvHeaders());
       }
