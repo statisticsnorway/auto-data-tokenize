@@ -23,7 +23,11 @@ on:
     types: [opened, synchronize, reopened]
 
 env:
-  GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
+  GCS_BUCKET: ${{ secrets.GCS_BUCKET_STAGING }}
+  GCS_PROJECT: ${{ secrets.GCS_PROJECT_STAGING }}
+  GCS_BUCKET: ${{ secrets.GCS_BUCKET_PROD }}
+  GCS_PROJECT: ${{ secrets.GCS_PROJECT_PROD }}
+  GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
 
 jobs:
   build:
@@ -45,4 +49,21 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle
       - name: Build
         run: ./gradlew clean buildNeeded shadowJar -x test
-
+      - name: Setup staging - gcloud / gsutil
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          service_account_key: ${{ secrets.GCS_SA_KEY }}
+          project_id: ${{ secrets.GCS_PROJECT_STAGING }}
+          export_default_credentials: true
+      - name: Deploy
+        run: |-
+          gsutil -m rsync -R build/libs/ gs://$GCS_BUCKET_STAGING/artifact-registry/
+      - name: Setup prod - gcloud / gsutil
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          service_account_key: ${{ secrets.GCS_SA_KEY }}
+          project_id: ${{ secrets.GCS_PROJECT_PROD }}
+          export_default_credentials: true
+      - name: Deploy
+        run: |-
+          gsutil -m rsync -R build/libs/ gs://$GCS_BUCKET_PROD/artifact-registry/
