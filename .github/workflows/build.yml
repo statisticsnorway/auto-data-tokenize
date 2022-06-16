@@ -59,7 +59,7 @@ jobs:
 
       - name: Deploy to staging
         run: |-
-          gsutil cp build/libs/ gs://$GCS_BUCKET_STAGING/artifact-registry/
+          gsutil cp -r build/libs/ gs://$GCS_BUCKET_STAGING/artifact-registry/
 
       - name: Setup prod - gcloud / gsutil
         uses: google-github-actions/setup-gcloud@v0
@@ -70,4 +70,4 @@ jobs:
 
       - name: Deploy to prod
         run: |-
-          gsutil cp build/libs/ gs://$GCS_BUCKET_PROD/artifact-registry/
+          gsutil cp -r build/libs/ gs://$GCS_BUCKET_PROD/artifact-registry/
