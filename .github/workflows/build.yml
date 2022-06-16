@@ -50,7 +50,7 @@ jobs:
       - name: Build
         run: ./gradlew clean buildNeeded shadowJar -x test
       - name: Setup staging - gcloud / gsutil
-        uses: GoogleCloudPlatform/github-actions/setup-gcloud@0
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@v0
         with:
           service_account_key: ${{ secrets.GCS_SA_KEY }}
           project_id: ${{ secrets.GCS_PROJECT_STAGING }}
@@ -59,7 +59,7 @@ jobs:
         run: |-
           gsutil -m rsync -R build/libs/ gs://$GCS_BUCKET_STAGING/artifact-registry/
       - name: Setup prod - gcloud / gsutil
-        uses: GoogleCloudPlatform/github-actions/setup-gcloud@0
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@v0
         with:
           service_account_key: ${{ secrets.GCS_SA_KEY }}
           project_id: ${{ secrets.GCS_PROJECT_PROD }}
