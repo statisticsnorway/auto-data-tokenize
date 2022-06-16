@@ -23,10 +23,10 @@ on:
     types: [opened, synchronize, reopened]
 
 env:
-  GCS_BUCKET: ${{ secrets.GCS_BUCKET_STAGING }}
-  GCS_PROJECT: ${{ secrets.GCS_PROJECT_STAGING }}
-  GCS_BUCKET: ${{ secrets.GCS_BUCKET_PROD }}
-  GCS_PROJECT: ${{ secrets.GCS_PROJECT_PROD }}
+  GCS_BUCKET_STAGING: ${{ secrets.GCS_BUCKET_STAGING }}
+  GCS_PROJECT_STAGING: ${{ secrets.GCS_PROJECT_STAGING }}
+  GCS_BUCKET_PROD: ${{ secrets.GCS_BUCKET_PROD }}
+  GCS_PROJECT_PROD: ${{ secrets.GCS_PROJECT_PROD }}
   GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
 
 jobs:
