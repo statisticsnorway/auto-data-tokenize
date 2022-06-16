@@ -70,4 +70,4 @@ jobs:
 
       - name: Deploy to prod
         run: |-
-          gsutil -m rsync -R build/libs/ gs://$GCS_BUCKET_PROD/artifact-registry/
+          gsutil cp build/libs/ gs://$GCS_BUCKET_PROD/artifact-registry/
