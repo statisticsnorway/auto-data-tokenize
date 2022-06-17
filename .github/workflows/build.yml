@@ -27,7 +27,8 @@ env:
   GCS_PROJECT_STAGING: ${{ secrets.GCS_PROJECT_STAGING }}
   GCS_BUCKET_PROD: ${{ secrets.GCS_BUCKET_PROD }}
   GCS_PROJECT_PROD: ${{ secrets.GCS_PROJECT_PROD }}
-  GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+  GCS_SA_KEY_PROD: ${{ secrets.GCS_SA_KEY_PROD }}
+  GCS_SA_KEY_STAGING: ${{ secrets.GCS_SA_KEY_STAGING }}
 
 jobs:
   build:
@@ -53,7 +54,7 @@ jobs:
       - name: Setup staging - gcloud / gsutil
         uses: google-github-actions/setup-gcloud@v0
         with:
-          service_account_key: ${{ secrets.GCS_SA_KEY }}
+          service_account_key: ${{ secrets.GCS_SA_KEY_STAGING }}
           project_id: ${{ secrets.GCS_PROJECT_STAGING }}
           export_default_credentials: true
 
@@ -64,7 +65,7 @@ jobs:
       - name: Setup prod - gcloud / gsutil
         uses: google-github-actions/setup-gcloud@v0
         with:
-          service_account_key: ${{ secrets.GCS_SA_KEY }}
+          service_account_key: ${{ secrets.GCS_SA_KEY_PROD }}
           project_id: ${{ secrets.GCS_PROJECT_PROD }}
           export_default_credentials: true
 
