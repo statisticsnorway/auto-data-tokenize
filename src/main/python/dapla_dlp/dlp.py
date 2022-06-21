@@ -13,6 +13,8 @@ class _DefaultOptions:
     subnetworkName = 'dataflow-subnetwork'
     sampleSize = 100
     sourceType = 'PARQUET'
+    csvFirstRowHeader = False
+    csvHeaders = []
     inputPattern = None
     logFile = STDOUT
     userName = os.environ['JUPYTERHUB_USER']
@@ -52,7 +54,7 @@ class TokenizeOptions(_DefaultOptions):
     kmsKeyringId = 'dlpflow-keyring'
     kmsKeyId = 'dlpflow-key-encryption-key-1'
     secretManagerKeyName = 'dlpflow-tinkey-wrapped-key-1'
-    schemaLocation = None
+    schemaLocation = ''
     tokenizeColumns = None
     outputDirectory = None
 
@@ -76,6 +78,8 @@ def start_dlp_inspection_pipeline(options: InspectionOptions):
     --subnetwork=https://www.googleapis.com/compute/v1/projects/{options.projectId}/regions/{options.regionId}/subnetworks/{options.subnetworkName} \
     --sampleSize={options.sampleSize} \
     --sourceType={options.sourceType} \
+    --csvFirstRowHeader={str.lower(str(options.csvFirstRowHeader))} \
+    {"--csvHeaders=" + ",".join(options.csvHeaders) if len(options.csvHeaders) > 0 else ""} \
     --inputPattern={options.inputPattern} \
     --reportLocation={options.reportLocation}'
 
@@ -93,12 +97,14 @@ def start_tokenize_pipeline(options: TokenizeOptions):
     --serviceAccount={options.serviceAccountPrefix}@{options.projectId}.iam.gserviceaccount.com \
     --tempLocation=gs://{options.tempGcsBucket}/bqtemp \
     --workerMachineType={options.workerMachineType} \
-    --schemaLocation={options.schemaLocation} \
+    {"" if options.schemaLocation == "" else "--schemaLocation=" + options.schemaLocation} \
     --mainKmsKeyUri=gcp-kms://projects/{options.projectId}/locations/{options.regionId}/keyRings/{options.kmsKeyringId}/cryptoKeys/{options.kmsKeyId} \
     --keyMaterialType=TINK_GCP_KEYSET_JSON_FROM_SECRET_MANAGER \
     --keyMaterial=projects/{options.projectId}/secrets/{options.secretManagerKeyName}/versions/latest \
     --subnetwork=https://www.googleapis.com/compute/v1/projects/{options.projectId}/regions/{options.regionId}/subnetworks/{options.subnetworkName} \
     --sourceType={options.sourceType} \
+    --csvFirstRowHeader={str.lower(str(options.csvFirstRowHeader))} \
+    {"--csvHeaders=" + ",".join(options.csvHeaders) if len(options.csvHeaders) > 0 else ""} \
     --inputPattern={options.inputPattern} \
     --outputDirectory={options.outputDirectory} \
     {" ".join(map(lambda col: "--tokenizeColumns=" + col, options.tokenizeColumns))}'

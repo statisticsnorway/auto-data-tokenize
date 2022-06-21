@@ -26,8 +26,13 @@ public class GoogleCredentialsWithQuotaProjectId extends GoogleCredentials imple
         }
     }
     @Override
-    public Map<String, List<String>> getRequestMetadata(URI uri) throws IOException {
-        Map<String, List<String>> newRequestMetadata = new HashMap<>(super.getRequestMetadata(uri));
+    public Map<String, List<String>> getRequestMetadata(URI uri) {
+        Map<String, List<String>> newRequestMetadata;
+        try {
+            newRequestMetadata = new HashMap<>(super.getRequestMetadata(uri));
+        } catch (IOException | IllegalStateException e) {
+            newRequestMetadata = new HashMap<>(getRequestMetadataInternal());
+        }
         if (quotaProjectId != null) {
             newRequestMetadata.put(
                     QUOTA_PROJECT_ID_HEADER_KEY, Collections.singletonList(quotaProjectId));
