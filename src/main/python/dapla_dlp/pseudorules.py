@@ -23,8 +23,8 @@ def find_filtered_fields(avro_schema, globs):
     :return: a set of "leaf fields" of an avro schema, filtered by a collection of glob expressions
     """
     all_fields = find_all_fields(avro_schema)
-    all_paths = {jsonpath_to_path(field) for field in all_fields}
-    return {path_to_jsonpath(p) for p in all_paths if glob_match(p, globs)}
+    all_paths = {_jsonpath_to_path(field) for field in all_fields}
+    return {_path_to_jsonpath(p) for p in all_paths if glob_match(p, globs)}
 
 
 def find_all_fields(avro_schema):
@@ -38,10 +38,10 @@ def find_all_fields(avro_schema):
     :return: a set of all "leaf fields" that an avro schema is composed of
     """
     fields = set()
-    traverse_record(avro_schema, "$", fields)
+    _traverse_record(avro_schema, "$", fields)
     return fields
 
-def traverse_record(record, namespace, fields):
+def _traverse_record(record, namespace, fields):
     """
     Traverse an avro schema record and recursively collect all "leaf nodes" into the supplied set, expressed as jsonpath.
 
@@ -52,7 +52,7 @@ def traverse_record(record, namespace, fields):
     if isinstance(record, avro.schema.RecordSchema) is False:
         raise ValueError(f'Expected avro record, encountered {type(record)}')
 
-    namespace += "." + item_name(record)
+    namespace += "." + _item_name(record)
 
     for item in record.get_prop("fields"):
         if isinstance(item.type, avro.schema.PrimitiveSchema):
@@ -61,18 +61,18 @@ def traverse_record(record, namespace, fields):
 
         # Records
         elif isinstance(item.type, avro.schema.RecordSchema):
-            traverse_record(item.type, namespace, fields)
+            _traverse_record(item.type, namespace, fields)
 
         # Arrays
         elif isinstance(item.type, avro.schema.ArraySchema):
-            traverse_array(item.type, namespace, fields)
+            _traverse_array(item.type, namespace, fields)
 
         # Unions
         elif isinstance(item.type, avro.schema.UnionSchema):
-            traverse_union(item.type, f"{namespace}.{item_name(item)}", fields)
+            _traverse_union(item.type, f"{namespace}.{_item_name(item)}", fields)
 
 
-def traverse_union(union, namespace, fields):
+def _traverse_union(union, namespace, fields):
     """
     Traverse an avro schema union and recursively collect all "leaf nodes" into the supplied set, expressed as jsonpath.
 
@@ -89,12 +89,12 @@ def traverse_union(union, namespace, fields):
     else:
         for schema in union.schemas:
             if isinstance(schema, avro.schema.RecordSchema):
-                traverse_record(schema, namespace, fields)
+                _traverse_record(schema, namespace, fields)
             elif isinstance(schema, avro.schema.ArraySchema):
-                traverse_array(schema, namespace, fields)
+                _traverse_array(schema, namespace, fields)
 
 
-def traverse_array(arr, namespace, fields):
+def _traverse_array(arr, namespace, fields):
     """
     Traverse an avro schema array and recursively collect all "leaf nodes" into the supplied set, expressed as jsonpath.
 
@@ -107,12 +107,12 @@ def traverse_array(arr, namespace, fields):
 
     items = arr.get_prop("items")
     if isinstance(items, avro.schema.RecordSchema):
-        traverse_record(items, namespace, fields)
+        _traverse_record(items, namespace, fields)
     elif isinstance(items, avro.schema.PrimitiveSchema) is False:
         raise ValueError(f"Unexpected type in array: {type(items)}")
 
 
-def item_name(schema_item):
+def _item_name(schema_item):
     """
     Produce the qualified name of an avro item, using a combination of namespace and name.
 
@@ -128,7 +128,7 @@ def item_name(schema_item):
     return ".".join(filter(None, [schema_item.get_prop("namespace"), schema_item.get_prop("name")]))
 
 
-def jsonpath_to_path(jsonpath):
+def _jsonpath_to_path(jsonpath):
     """
     Convert jsonpath expression to a path expression
 
@@ -140,7 +140,7 @@ def jsonpath_to_path(jsonpath):
     return jsonpath.replace(".", "/")[1:]
 
 
-def path_to_jsonpath(path):
+def _path_to_jsonpath(path):
     """
     Convert slash separated path (like in a file path) to json path
 
