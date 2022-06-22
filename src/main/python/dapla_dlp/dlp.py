@@ -56,7 +56,7 @@ class TokenizeOptions(_DefaultOptions):
     secretManagerKeyName = 'dlpflow-tinkey-wrapped-key-1'
     schemaLocation = ''
     tokenizeColumns = None
-    outputDirectory = None
+    outputTarget = None
 
     def __init__(self, opt=_DefaultOptions(), **kw):
         """ instance-constructor """
@@ -106,7 +106,7 @@ def start_tokenize_pipeline(options: TokenizeOptions):
     --csvFirstRowHeader={str.lower(str(options.csvFirstRowHeader))} \
     {"--csvHeaders=" + ",".join(options.csvHeaders) if len(options.csvHeaders) > 0 else ""} \
     --inputPattern={options.inputPattern} \
-    --outputDirectory={options.outputDirectory} \
+    {"--outputDirectory=" if str.startswith("gs://", options.outputTarget) else "--outputBigQueryTable="}{options.outputTarget} \
     {" ".join(map(lambda col: "--tokenizeColumns=" + col, options.tokenizeColumns))}'
 
     _run_pipeline('com.google.cloud.solutions.autotokenize.pipeline.EncryptionPipeline', options_str.split(' '),
