@@ -1,0 +1,42 @@
+{
+  "type" : "record",
+  "name" : "root",
+  "namespace": "blah",
+  "extra" : "record-root",
+  "fields" : [ {
+    "name" : "id",
+    "type" : "string",
+    "extra" : "fields-string-id"
+  }, {
+    "name" : "person",
+    "extra" : "person-array-extra",
+    "type" : {
+      "type" : "array",
+      "extra" : "array-extra",
+      "items" : {
+        "type" : "record",
+        "extra" : "person-record-extra",
+        "name" : "person",
+        "namespace" : "",
+        "fields" : [ {
+          "name" : "name",
+          "extra" : "person-name-extra",
+          "type" : "string"
+        }, {
+          "name" : "gender",
+          "extra" : "person-gender-extra",
+          "type" : [ "null", "string" ],
+          "default" : null
+        } ]
+      }
+    }
+  }, {
+    "name" : "languages",
+    "extra" : "languages-with-child-type-array",
+    "type" : {
+      "type" : "array",
+      "extra" : "array with items string",
+      "items" : "string"
+    }
+  } ]
+}
