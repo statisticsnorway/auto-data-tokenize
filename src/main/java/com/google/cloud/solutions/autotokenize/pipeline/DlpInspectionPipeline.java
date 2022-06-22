@@ -245,6 +245,7 @@ public final class DlpInspectionPipeline {
         break;
 
       case AVRO:
+      case CSV_FILE:
       case PARQUET:
         checkArgument(
             options.getDataCatalogInspectionTagTemplateId() == null
