@@ -48,13 +48,17 @@ import com.google.cloud.solutions.autotokenize.encryptors.ClearTextKeySetExtract
 import com.google.cloud.solutions.autotokenize.encryptors.GcpKmsClearTextKeySetExtractor;
 import com.google.cloud.solutions.autotokenize.encryptors.ValueTokenizerFactory;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.flogger.GoogleLogger;
 import com.google.common.io.BaseEncoding;
 import com.google.protobuf.ByteString;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.channels.Channels;
+import java.nio.channels.SeekableByteChannel;
 import java.security.GeneralSecurityException;
+import java.util.Arrays;
 import java.util.List;
 import org.apache.avro.Schema;
 import org.apache.avro.file.CodecFactory;
@@ -69,6 +73,10 @@ import org.apache.beam.sdk.schemas.utils.AvroUtils;
 import org.apache.beam.sdk.transforms.Reshuffle;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.TupleTag;
+import org.apache.parquet.avro.AvroParquetReader;
+import org.apache.parquet.io.DelegatingSeekableInputStream;
+import org.apache.parquet.io.InputFile;
+import org.apache.parquet.io.SeekableInputStream;
 
 /**
  * Creates and launches a Dataflow pipeline to encrypt the provided input files using the
@@ -82,6 +90,7 @@ public class EncryptionPipeline {
   private final SecretsClient secretsClient;
   private final KeyManagementServiceClient kmsClient;
   private final ClearTextKeySetExtractor keySetExtractor;
+  public static final GoogleLogger logger = GoogleLogger.forEnclosingClass();
 
   public static void main(String[] args) throws Exception {
 
@@ -182,7 +191,8 @@ public class EncryptionPipeline {
   private Schema buildEncryptedSchema() {
     checkArgument(
         isNotBlank(options.getSchema())
-            || isNotBlank(options.getSchemaLocation())
+            || SourceType.PARQUET.equals(options.getSourceType())
+            || (SourceType.CSV_FILE.equals(options.getSourceType()) && options.getCsvFirstRowHeader())
             || (SourceType.CSV_FILE.equals(options.getSourceType())
                 && options.getCsvHeaders() != null
                 && !options.getCsvHeaders().isEmpty()),
@@ -190,13 +200,25 @@ public class EncryptionPipeline {
 
     Schema inputSchema;
     try {
-      if (options.getSchemaLocation() != null) {
-        try (InputStream stream = Channels.newInputStream(FileSystems.open(FileSystems.matchNewResource(
-                options.getSchemaLocation(), false)))) {
-          inputSchema = new Schema.Parser().parse(stream);
+      if (SourceType.PARQUET.equals(options.getSourceType())) {
+        logger.atInfo().log("Will try to infer schema from Parquet file");
+        try (var fc = (SeekableByteChannel) FileSystems.open(FileSystems.matchNewResource(options.getInputPattern(), false))) {
+          var parquetReader = AvroParquetReader.genericRecordReader(new BeamParquetInputFile(fc));
+          inputSchema = parquetReader.read().getSchema();
+          logger.atInfo().log("Inferred schema: %s", inputSchema.toString(true));
         }
       } else if (options.getSchema() != null) {
         inputSchema = new Schema.Parser().parse(options.getSchema());
+      } else if (options.getCsvFirstRowHeader()) {
+        logger.atInfo().log("Will try to infer schema from first row in CSV file");
+        try (var stream = Channels.newInputStream(FileSystems.open(FileSystems.matchNewResource(
+                options.getInputPattern(), false)))) {
+          var reader = new BufferedReader(new InputStreamReader(stream));
+          var headers = reader.readLine();
+          var separator = headers.contains(";") ? ";" : ",";
+          inputSchema = CsvRowFlatRecordConvertors.makeCsvAvroSchema(Arrays.asList(headers.split(separator)));
+          logger.atInfo().log("Inferred schema: %s", inputSchema.toString(true));
+        }
       } else {
         inputSchema = CsvRowFlatRecordConvertors.makeCsvAvroSchema(options.getCsvHeaders());
       }
@@ -379,4 +401,34 @@ public class EncryptionPipeline {
       throw new RuntimeException("error in instantiating ValueTokenizerFactory");
     }
   }
+
+  private static class BeamParquetInputFile implements InputFile {
+    private final SeekableByteChannel seekableByteChannel;
+
+    BeamParquetInputFile(SeekableByteChannel seekableByteChannel) {
+      this.seekableByteChannel = seekableByteChannel;
+    }
+
+    @Override
+    public long getLength() throws IOException {
+      return seekableByteChannel.size();
+    }
+
+    @Override
+    public SeekableInputStream newStream() {
+      return new DelegatingSeekableInputStream(Channels.newInputStream(seekableByteChannel)) {
+
+        @Override
+        public long getPos() throws IOException {
+          return seekableByteChannel.position();
+        }
+
+        @Override
+        public void seek(long newPos) throws IOException {
+          seekableByteChannel.position(newPos);
+        }
+      };
+    }
+  }
+
 }
