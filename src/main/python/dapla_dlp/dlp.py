@@ -58,7 +58,6 @@ class PseudoOptions(_DefaultOptions):
     kmsKeyringId = 'dlpflow-keyring'
     kmsKeyId = 'dlpflow-key-encryption-key-1'
     secretManagerKeyName = 'dlpflow-tinkey-wrapped-key-1'
-    schemaLocation = ''
     fields = None
     target = None
 
@@ -101,7 +100,6 @@ def start_pseudo_pipeline(options: PseudoOptions):
     --serviceAccount={options.serviceAccountPrefix}@{options.projectId}.iam.gserviceaccount.com \
     --tempLocation=gs://{options.tempGcsBucket}/bqtemp \
     --workerMachineType={options.workerMachineType} \
-    {"" if options.schemaLocation == "" else "--schemaLocation=" + options.schemaLocation} \
     --mainKmsKeyUri=gcp-kms://projects/{options.projectId}/locations/{options.regionId}/keyRings/{options.kmsKeyringId}/cryptoKeys/{options.kmsKeyId} \
     --keyMaterialType=TINK_GCP_KEYSET_JSON_FROM_SECRET_MANAGER \
     --keyMaterial=projects/{options.projectId}/secrets/{options.secretManagerKeyName}/versions/latest \
