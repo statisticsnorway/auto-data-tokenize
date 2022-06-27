@@ -62,8 +62,10 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.PipelineResult;
 import org.apache.beam.sdk.io.AvroIO;
+import org.apache.beam.sdk.io.FileIO;
 import org.apache.beam.sdk.io.FileSystems;
 import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO;
+import org.apache.beam.sdk.io.parquet.ParquetIO;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.schemas.utils.AvroUtils;
 import org.apache.beam.sdk.transforms.Reshuffle;
@@ -145,29 +147,46 @@ public class EncryptionPipeline {
     var encryptedRecords =
         applyReadAndEncryptionSteps().apply(RecordNester.forSchema(encryptedSchema));
 
-    if (options.getOutputDirectory() != null) {
-      encryptedRecords.apply(
-          "WriteAVRO",
-          AvroIO.writeGenericRecords(encryptedSchema)
-              .withSuffix(".avro")
-              .to(cleanDirectoryString(options.getOutputDirectory()) + "/data")
-              .withCodec(CodecFactory.snappyCodec()));
-    }
+        if (options.getOutputDirectory() != null) {
+            if (options.getOutputType() != null) {
+                String outputType = options.getOutputType();
+                switch (outputType) {
+                    case "AVRO":
+                        encryptedRecords.apply(
+                                "WriteAVRO",
+                                AvroIO.writeGenericRecords(encryptedSchema)
+                                        .withSuffix(".avro")
+                                        .to(cleanDirectoryString(options.getOutputDirectory()) + "/data")
+                                        .withCodec(CodecFactory.snappyCodec()));
 
-    if (options.getOutputBigQueryTable() != null) {
+                    case "PARQUET":
+                        encryptedRecords.apply(
+                                "WritePARQUET",
+                                      FileIO.<GenericRecord>write()
+                                              .withSuffix(".parquet")
+                                              .via(ParquetIO.sink(buildEncryptedSchema()))
+                                              .to(cleanDirectoryString(options.getOutputDirectory()) + "/data"));
+                }
 
-      encryptedRecords
-          .apply("Reshuffle", Reshuffle.viaRandomKey())
-          .setCoder(AvroUtils.schemaCoder(GenericRecord.class, encryptedSchema))
-          .apply(
-              "WriteToBigQuery",
-              BigQueryIO.<GenericRecord>write()
-                  .to(options.getOutputBigQueryTable())
-                  .useBeamSchema()
-                  .optimizedWrites()
-                  .withWriteDisposition(
-                      (options.getBigQueryAppend()) ? WRITE_APPEND : WRITE_TRUNCATE));
-    }
+            }
+
+
+        }
+
+        if (options.getOutputBigQueryTable() != null) {
+
+            encryptedRecords
+                    .apply("Reshuffle", Reshuffle.viaRandomKey())
+                    .setCoder(AvroUtils.schemaCoder(GenericRecord.class, encryptedSchema))
+                    .apply(
+                            "WriteToBigQuery",
+                            BigQueryIO.<GenericRecord>write()
+                                    .to(options.getOutputBigQueryTable())
+                                    .useBeamSchema()
+                                    .optimizedWrites()
+                                    .withWriteDisposition(
+                                            (options.getBigQueryAppend()) ? WRITE_APPEND : WRITE_TRUNCATE));
+        }
 
     return pipeline.run();
   }

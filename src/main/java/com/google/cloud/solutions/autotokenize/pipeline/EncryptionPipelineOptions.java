@@ -34,11 +34,11 @@ public interface EncryptionPipelineOptions extends AutoInspectAndTokenizeOptions
 
   List<String> getTokenizeColumns();
 
-  void setTokenizeColumns(List<String> fileDlpReportJson);
+  void setTokenizeColumns(List<String> tokenizeColumns);
 
   String getOutputDirectory();
 
-  void setOutputDirectory(String outputFilePattern);
+  void setOutputDirectory(String outputDirectory);
 
   String getOutputBigQueryTable();
 
@@ -75,4 +75,9 @@ public interface EncryptionPipelineOptions extends AutoInspectAndTokenizeOptions
   KeyMaterialType getKeyMaterialType();
 
   void setKeyMaterialType(KeyMaterialType keyMaterialType);
+
+  String getOutputType();
+
+  void setOutputType(String outputType);
+
 }
