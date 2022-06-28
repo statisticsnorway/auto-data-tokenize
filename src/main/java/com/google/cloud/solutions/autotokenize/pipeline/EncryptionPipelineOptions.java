@@ -30,11 +30,11 @@ public interface EncryptionPipelineOptions extends AutoInspectAndTokenizeOptions
 
   List<String> getTokenizeColumns();
 
-  void setTokenizeColumns(List<String> tokenizeColumns);
+  void setTokenizeColumns(List<String> fileDlpReportJson);
 
   String getOutputDirectory();
 
-  void setOutputDirectory(String outputDirectory);
+  void setOutputDirectory(String outputFilePattern);
 
   String getOutputBigQueryTable();
 
