@@ -34,7 +34,7 @@ import org.apache.beam.sdk.values.KV;
 /** Utility functions to convert {@link FlatRecord} elements to {@link CsvRow} and reverse. */
 public final class CsvRowFlatRecordConvertors {
 
-  private static final String AVRO_ROOT_RECORD_NAME = "CsvRecord";
+  private static final String AVRO_ROOT_RECORD_NAME = "schema";
 
   public static CsvRowToFlatRecordFn csvRowToFlatRecordFn() {
     return new CsvRowToFlatRecordFn();
