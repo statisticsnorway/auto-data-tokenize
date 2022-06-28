@@ -178,7 +178,7 @@ public class EncryptionPipeline {
                   "WritePARQUET",
                   FileIO.<GenericRecord>write()
                           .withSuffix(".parquet")
-                          .via(ParquetIO.sink(buildEncryptedSchema()))
+                          .via(ParquetIO.sink(encryptedSchema))
                           .to(cleanDirectoryString(options.getOutputDirectory()) + "/data"));
           break;
       }
