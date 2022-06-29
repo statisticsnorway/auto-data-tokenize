@@ -65,6 +65,15 @@ class PseudoOptions(_DefaultOptions):
         """ instance-constructor """
         self.init_options(opt, kw)
 
+class SchemaOptions(_DefaultOptions):
+
+    # Extra options
+    globPattern = []
+    target = None
+
+    def __init__(self, opt=_DefaultOptions(), **kw):
+        """ instance-constructor """
+        self.init_options(opt, kw)
 
 def start_dlp_inspection_pipeline(options: InspectionOptions):
 
@@ -112,6 +121,23 @@ def start_pseudo_pipeline(options: PseudoOptions):
     {" ".join(map(lambda col: "--tokenizeColumns=" + col, options.fields))}'
 
     _run_pipeline('com.google.cloud.solutions.autotokenize.pipeline.EncryptionPipeline', options_str.split(' '),
+                  stderr=STDOUT if options.logFile is STDOUT else open(options.logFile, mode='w'))
+
+
+def start_schema_pipeline(options: SchemaOptions):
+
+    options.validate()
+    options_str = f'--project={options.projectId} \
+    --region={options.regionId} \
+    --userName={options.userName} \
+    --runner=DataflowRunner \
+    --tempLocation=gs://{options.tempGcsBucket}/bqtemp \
+    --serviceAccount={options.serviceAccountPrefix}@{options.projectId}.iam.gserviceaccount.com \
+    --inputPattern={options.source} \
+    "--outputDirectory={options.target}" \
+    {" ".join(map(lambda col: "--tokenizeGlobPattern=" + col, options.globPattern))}'
+
+    _run_pipeline('com.google.cloud.solutions.autotokenize.pipeline.SchemaPipeline', options_str.split(' '),
                   stderr=STDOUT if options.logFile is STDOUT else open(options.logFile, mode='w'))
 
 

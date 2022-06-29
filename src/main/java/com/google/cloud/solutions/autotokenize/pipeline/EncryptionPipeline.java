@@ -189,42 +189,7 @@ public class EncryptionPipeline {
   }
 
   private Schema buildEncryptedSchema() {
-    checkArgument(
-        isNotBlank(options.getSchema())
-            || SourceType.PARQUET.equals(options.getSourceType())
-            || (SourceType.CSV_FILE.equals(options.getSourceType()) && options.getCsvFirstRowHeader())
-            || (SourceType.CSV_FILE.equals(options.getSourceType())
-                && options.getCsvHeaders() != null
-                && !options.getCsvHeaders().isEmpty()),
-        "Provide Source's Avro Schema or headers for CSV_FILE.");
-
-    Schema inputSchema;
-    try {
-      if (SourceType.PARQUET.equals(options.getSourceType())) {
-        logger.atInfo().log("Will try to infer schema from Parquet file");
-        try (var fc = (SeekableByteChannel) FileSystems.open(FileSystems.matchNewResource(options.getInputPattern(), false))) {
-          var parquetReader = AvroParquetReader.genericRecordReader(new BeamParquetInputFile(fc));
-          inputSchema = parquetReader.read().getSchema();
-          logger.atInfo().log("Inferred schema: %s", inputSchema.toString(true));
-        }
-      } else if (options.getSchema() != null) {
-        inputSchema = new Schema.Parser().parse(options.getSchema());
-      } else if (options.getCsvFirstRowHeader()) {
-        logger.atInfo().log("Will try to infer schema from first row in CSV file");
-        try (var stream = Channels.newInputStream(FileSystems.open(FileSystems.matchNewResource(
-                options.getInputPattern(), false)))) {
-          var reader = new BufferedReader(new InputStreamReader(stream));
-          var headers = reader.readLine();
-          var separator = headers.contains(";") ? ";" : ",";
-          inputSchema = CsvRowFlatRecordConvertors.makeCsvAvroSchema(Arrays.asList(headers.split(separator)));
-          logger.atInfo().log("Inferred schema: %s", inputSchema.toString(true));
-        }
-      } else {
-        inputSchema = CsvRowFlatRecordConvertors.makeCsvAvroSchema(options.getCsvHeaders());
-      }
-    } catch (IOException e) {
-      throw new IllegalArgumentException("Error reading schema URI", e);
-    }
+    Schema inputSchema = SchemaHelper.readSchemaFromInputFile(options);
 
     List<String> tokenizeColumnNames =
         (options.getDlpEncryptConfigJson() == null)
@@ -399,35 +364,6 @@ public class EncryptionPipeline {
       }
 
       throw new RuntimeException("error in instantiating ValueTokenizerFactory");
-    }
-  }
-
-  private static class BeamParquetInputFile implements InputFile {
-    private final SeekableByteChannel seekableByteChannel;
-
-    BeamParquetInputFile(SeekableByteChannel seekableByteChannel) {
-      this.seekableByteChannel = seekableByteChannel;
-    }
-
-    @Override
-    public long getLength() throws IOException {
-      return seekableByteChannel.size();
-    }
-
-    @Override
-    public SeekableInputStream newStream() {
-      return new DelegatingSeekableInputStream(Channels.newInputStream(seekableByteChannel)) {
-
-        @Override
-        public long getPos() throws IOException {
-          return seekableByteChannel.position();
-        }
-
-        @Override
-        public void seek(long newPos) throws IOException {
-          seekableByteChannel.position(newPos);
-        }
-      };
     }
   }
 

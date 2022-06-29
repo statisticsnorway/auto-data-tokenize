@@ -1,5 +1,6 @@
 package com.google.cloud.solutions.autotokenize.pipeline;
 
+import com.google.cloud.solutions.autotokenize.AutoTokenizeMessages;
 import com.google.cloud.solutions.autotokenize.common.SourceNames;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.avro.Schema;
@@ -27,7 +28,14 @@ public class SchemaPipeline {
     }
 
     public PipelineResult run() {
-        var schema = pipeline.apply("Read" + SourceNames.forType(options.getSourceType()).asCamelCase(),
+        if (options.getInputPattern().endsWith(".parquet")) {
+            options.setSourceType(AutoTokenizeMessages.SourceType.PARQUET);
+        } else if (options.getInputPattern().endsWith(".csv")) {
+            options.setSourceType(AutoTokenizeMessages.SourceType.CSV_FILE);
+        } else {
+            throw new IllegalArgumentException("Unable to infer source type from input pattern: " + options.getInputPattern());
+        }
+        var schema = pipeline.apply("ReadSchema" + SourceNames.forType(options.getSourceType()).asCamelCase(),
                 Create.of(SchemaHelper.readSchemaFromInputFile(options)));
 
         if (options.getTokenizeGlobPattern() != null && !options.getTokenizeGlobPattern().isEmpty()) {
