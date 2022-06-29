@@ -76,6 +76,7 @@ class SchemaOptions(_DefaultOptions):
         """ instance-constructor """
         self.init_options(opt, kw)
 
+
 def start_dlp_inspection_pipeline(options: InspectionOptions):
 
     options.validate()
@@ -132,10 +133,11 @@ def start_schema_pipeline(options: SchemaOptions):
     --region={options.regionId} \
     --userName={options.userName} \
     --runner=DataflowRunner \
-    --tempLocation=gs://{options.tempGcsBucket}/bqtemp \
+    --gcpTempLocation=gs://{options.tempGcsBucket}/temp \
+    --subnetwork=https://www.googleapis.com/compute/v1/projects/{options.projectId}/regions/{options.regionId}/subnetworks/{options.subnetworkName} \
     --serviceAccount={options.serviceAccountPrefix}@{options.projectId}.iam.gserviceaccount.com \
     --inputPattern={options.source} \
-    "--outputDirectory={options.target}" \
+    --outputDirectory={options.target} \
     {" ".join(map(lambda col: "--tokenizeGlobPattern=" + col, options.globPattern))}'
 
     _run_pipeline('com.google.cloud.solutions.autotokenize.pipeline.SchemaPipeline', options_str.split(' '),

@@ -1,6 +1,7 @@
 package com.google.cloud.solutions.autotokenize.pipeline;
 
 import com.google.cloud.solutions.autotokenize.AutoTokenizeMessages;
+import com.google.cloud.solutions.autotokenize.auth.AccessTokenCredentialsFactory;
 import com.google.cloud.solutions.autotokenize.common.SourceNames;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.avro.Schema;
@@ -97,6 +98,7 @@ public class SchemaPipeline {
     public static void main(String[] args) {
 
         EncryptionPipelineOptions options = PipelineOptionsFactory.fromArgs(args).as(EncryptionPipelineOptions.class);
+        options.setCredentialFactoryClass(AccessTokenCredentialsFactory.class);
         options.setJobName(new UserEnvironmentOptions.JobNameFactory().create(options));
 
         new SchemaPipeline(options, Pipeline.create(options)).run();
