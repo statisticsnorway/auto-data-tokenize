@@ -65,6 +65,7 @@ class PseudoOptions(_DefaultOptions):
         """ instance-constructor """
         self.init_options(opt, kw)
 
+
 class SchemaOptions(_DefaultOptions):
 
     # Extra options
