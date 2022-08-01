@@ -66,8 +66,10 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.PipelineResult;
 import org.apache.beam.sdk.io.AvroIO;
+import org.apache.beam.sdk.io.FileIO;
 import org.apache.beam.sdk.io.FileSystems;
 import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO;
+import org.apache.beam.sdk.io.parquet.ParquetIO;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.schemas.utils.AvroUtils;
 import org.apache.beam.sdk.transforms.Reshuffle;
@@ -153,14 +155,33 @@ public class EncryptionPipeline {
     var encryptedSchema = buildEncryptedSchema();
     var encryptedRecords =
         applyReadAndEncryptionSteps().apply(RecordNester.forSchema(encryptedSchema));
+    String outputType;
 
     if (options.getOutputDirectory() != null) {
-      encryptedRecords.apply(
-          "WriteAVRO",
-          AvroIO.writeGenericRecords(encryptedSchema)
-              .withSuffix(".avro")
-              .to(cleanDirectoryString(options.getOutputDirectory()) + "/data")
-              .withCodec(CodecFactory.snappyCodec()));
+      if (options.getOutputType() != null) {
+         outputType = options.getOutputType();
+      }
+      else{
+        outputType = options.getSourceType().getValueDescriptor().toString();
+      }
+      switch (outputType) {
+        case "AVRO":
+          encryptedRecords.apply(
+                  "WriteAVRO",
+                  AvroIO.writeGenericRecords(encryptedSchema)
+                          .withSuffix(".avro")
+                          .to(cleanDirectoryString(options.getOutputDirectory()) + "/data")
+                          .withCodec(CodecFactory.snappyCodec()));
+          break;
+        case "PARQUET":
+          encryptedRecords.apply(
+                  "WritePARQUET",
+                  FileIO.<GenericRecord>write()
+                          .withSuffix(".parquet")
+                          .via(ParquetIO.sink(encryptedSchema))
+                          .to(cleanDirectoryString(options.getOutputDirectory()) + "/data"));
+          break;
+      }
     }
 
     if (options.getOutputBigQueryTable() != null) {

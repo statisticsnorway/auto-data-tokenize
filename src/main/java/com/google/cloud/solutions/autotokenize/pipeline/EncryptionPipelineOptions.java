@@ -71,4 +71,9 @@ public interface EncryptionPipelineOptions extends AutoInspectAndTokenizeOptions
   KeyMaterialType getKeyMaterialType();
 
   void setKeyMaterialType(KeyMaterialType keyMaterialType);
+
+  String getOutputType();
+
+  void setOutputType(String outputType);
+
 }
